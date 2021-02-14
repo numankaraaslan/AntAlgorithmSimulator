@@ -61,7 +61,6 @@ public class AntAlgorithm extends Application
     private Button button_clear_graf, button_start_sim, button_stop_sim;
     private Circle circle_last, circle_context, circle_food_ex, circle_cave_ex, circle_graf_ex;
     private CheckBox checkbox_show_info;
-    private TranslateTransition[] animations;
     private ImageView image_ant_ex;
     private GrafLine line_context;
     private Timer my_timer;
@@ -84,7 +83,6 @@ public class AntAlgorithm extends Application
     {
         my_stage = primaryStage;
         animation_time = ( double ) 1 / animation_time_coef;
-        animations = new TranslateTransition[ 0 ];
         prepare_variables();
         group_root = GroupBuilder.create().layoutX( offset_x ).layoutY( offset_y ).build();
         group_right = prepare_group_right();
@@ -170,33 +168,41 @@ public class AntAlgorithm extends Application
             }
             selected_ant.set_found_food( false );
         }
-        ArrayList ants_neighbours = new ArrayList();
+        ArrayList ants_suitable_neighbours = new ArrayList();
+        ArrayList ants_all_neighbours = new ArrayList();
         for ( int j = 0; j < all_neihgbours_mat[old_id].length; j++ )
         {
-            if ( all_neihgbours_mat[old_id][j] == 1 && j != Integer.parseInt( selected_ant.get_last_id() ) )
+            if ( all_neihgbours_mat[old_id][j] == 1 && selected_ant.path_is_suitable( j ) )
             {
-                ants_neighbours.add( j );
+                ants_suitable_neighbours.add( j );
+            }
+            if ( all_neihgbours_mat[old_id][j] == 1 )
+            {
+                ants_all_neighbours.add( j );
             }
         }
-        //Collections.shuffle( ants_neighbours );
         ArrayList possibilities = new ArrayList();
         int path_to_go = -1;
-        if ( ants_neighbours.isEmpty() )
+        if ( ants_all_neighbours.size() == 1 )
         {
-            path_to_go = Integer.parseInt( selected_ant.get_last_id() );
+            path_to_go = Integer.parseInt( ants_all_neighbours.get( 0 ).toString() );
         }
-        else if ( ants_neighbours.size() == 1 )
+        else if ( ants_suitable_neighbours.isEmpty() )
         {
-            path_to_go = Integer.parseInt( ants_neighbours.get( 0 ).toString() );
+            path_to_go = Integer.parseInt( ants_all_neighbours.get( my_random.nextInt( ants_all_neighbours.size() ) ).toString() );
+        }
+        else if ( ants_suitable_neighbours.size() == 1 )
+        {
+            path_to_go = Integer.parseInt( ants_suitable_neighbours.get( 0 ).toString() );
         }
         else
         {
             double total_value = 0, neighbour_value;
-            for ( int i = 0; i < ants_neighbours.size(); i++ )
+            for ( int i = 0; i < ants_suitable_neighbours.size(); i++ )
             {
                 for ( int k = 0; k < edges.length; k++ )
                 {
-                    if ( edges[k].getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_neighbours.get( i ).toString() ) ) ) )
+                    if ( edges[k].getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_suitable_neighbours.get( i ).toString() ) ) ) )
                     {
                         total_value += Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta );
                         possibilities.add( Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta ) );
@@ -221,21 +227,16 @@ public class AntAlgorithm extends Application
                 }
             }
             int some_random;
-            boolean is_any_path_suitable = selected_ant.at_least_one_path_suitable( ants_neighbours );
-            do
+            some_random = my_random.nextInt( random_max );
+            for ( int k = 0; k < possibilities.size(); k++ )
             {
-                some_random = my_random.nextInt( random_max );
-                for ( int k = 0; k < possibilities.size(); k++ )
+                some_random -= Double.parseDouble( possibilities.get( k ).toString() );
+                if ( some_random < 0 )
                 {
-                    some_random -= Double.parseDouble( possibilities.get( k ).toString() );
-                    if ( some_random < 0 )
-                    {
-                        path_to_go = Integer.parseInt( ants_neighbours.get( k ).toString() );
-                        break;
-                    }
+                    path_to_go = Integer.parseInt( ants_suitable_neighbours.get( k ).toString() );
+                    break;
                 }
             }
-            while ( !selected_ant.path_is_suitable( path_to_go ) && is_any_path_suitable );
         }
         selected_ant.setId( path_to_go + "" );
         selected_ant.set_last_id( old_id + "" );
@@ -251,19 +252,10 @@ public class AntAlgorithm extends Application
                 break;
             }
         }
-        int anim = -1;
-        for ( int k = 0; k < animations.length; k++ )
-        {
-            if ( ( ( Image_ant ) animations[k].getNode() ).get_name().equals( selected_ant.get_name() ) )
-            {
-                anim = k;
-                break;
-            }
-        }
-        animations[anim] = my_builder.build_translate_transition( selected_ant, animation_time, new_pos_x, new_pos_y, temp_line );
+        TranslateTransition anim = my_builder.build_translate_transition( selected_ant, animation_time, new_pos_x, new_pos_y, temp_line );
         int old_x = ( int ) selected_ant.getTranslateX(), old_y = ( int ) selected_ant.getTranslateY();
         selected_ant.setRotate( Ops.calc_rotate( old_x, old_y, new_pos_x, new_pos_y ) );
-        animations[anim].setOnFinished( new EventHandler<ActionEvent>()
+        anim.setOnFinished( new EventHandler<ActionEvent>()
         {
             @Override
             public void handle( ActionEvent event )
@@ -271,7 +263,8 @@ public class AntAlgorithm extends Application
                 create_animation( selected_ant );
             }
         } );
-        animations[anim].playFromStart();
+        selected_ant.setAnimation( anim );
+        selected_ant.getAnimation().playFromStart();
     }
     private void reset_neighbours()
     {
@@ -874,10 +867,6 @@ public class AntAlgorithm extends Application
             public void handle( ActionEvent event )
             {
                 my_timer.stop();
-                for ( int m = 0; m < animations.length; m++ )
-                {
-                    animations[m].stop();
-                }
                 ( ( Button ) event.getSource() ).setDisable( true );
                 button_start_sim.setDisable( false );
                 for ( int m = 0; m < grid_height; m++ )
@@ -889,6 +878,7 @@ public class AntAlgorithm extends Application
                 }
                 for ( int m = 0; m < my_little_ants.length; m++ )
                 {
+                    my_little_ants[m].getAnimation().stop();
                     my_little_ants[m].setVisible( false );
                     my_little_ants[m] = null;
                 }
@@ -975,7 +965,6 @@ public class AntAlgorithm extends Application
                     }
                 }
                 //create ants
-                animations = new TranslateTransition[ ant_count ];
                 boolean cave = false;
                 Circle cave_circle = circle_cave_ex;
                 for ( int m = 0; m < grid_height; m++ )
@@ -1000,9 +989,7 @@ public class AntAlgorithm extends Application
                     ant = my_builder.build_image_ant( Integer.parseInt( cave_circle.getId() ), ( int ) cave_circle.getCenterX(), ( int ) cave_circle.getCenterY(), "k" + m );
                     group_grid.getChildren().add( ant );
                     my_little_ants = Ops.add_circle( my_little_ants, ant );
-                    animations[m] = new TranslateTransition();
-                    animations[m].setNode( ant );
-                    create_animation( my_little_ants[m] );
+                    create_animation( ant );
                 }
                 my_timer.restart();
             }
@@ -1045,20 +1032,23 @@ public class AntAlgorithm extends Application
                 animation_time = ( double ) newValue.intValue() / animation_time_coef;
                 my_timer.setDelay( animation_time != 0 ? ( int ) ( 500 / animation_time ) : Integer.MAX_VALUE );
                 my_timer.restart();
-                if ( newValue.intValue() == 0 )
+                if ( my_little_ants != null )
                 {
-                    for ( int m = 0; m < animations.length; m++ )
+                    if ( newValue.intValue() == 0 )
                     {
-                        animations[m].pause();
-                    }
-                }
-                else
-                {
-                    for ( int m = 0; m < animations.length; m++ )
-                    {
-                        if ( animations[m].statusProperty().get() == Status.PAUSED )
+                        for ( int m = 0; m < my_little_ants.length; m++ )
                         {
-                            animations[m].play();
+                            my_little_ants[m].getAnimation().pause();
+                        }
+                    }
+                    else
+                    {
+                        for ( int m = 0; m < my_little_ants.length; m++ )
+                        {
+                            if ( my_little_ants[m].getAnimation().statusProperty().get() == Status.PAUSED )
+                            {
+                                my_little_ants[m].getAnimation().play();
+                            }
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 package ant.algorithm;
 
 import java.util.ArrayList;
+import javafx.animation.TranslateTransition;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -10,6 +11,7 @@ public class Image_ant extends ImageView
     private String last_point, name;
     private ArrayList visited_paths;
     private Operations oopsyy;
+    private TranslateTransition animation;
     public Image_ant( int id, int pos_x, int pos_y, String name )
     {
         this.setId( id + "" );
@@ -31,6 +33,14 @@ public class Image_ant extends ImageView
     public void set_name( String name )
     {
         this.name = name;
+    }
+    public TranslateTransition getAnimation()
+    {
+        return animation;
+    }
+    public void setAnimation( TranslateTransition animation )
+    {
+        this.animation = animation;
     }
     public String get_last_id()
     {
@@ -72,18 +82,5 @@ public class Image_ant extends ImageView
         {
             visited_paths.add( calculated_path );
         }
-    }
-    public boolean at_least_one_path_suitable( ArrayList neighbours )
-    {
-        boolean is_suitable = false;
-        for ( int m = 0; m < neighbours.size(); m++ )
-        {
-            is_suitable = !visited_paths.contains( oopsyy.id_calc( Integer.parseInt( getId() ), Integer.parseInt( neighbours.get( m ).toString() ) ) );
-            if ( is_suitable )
-            {
-                break;
-            }
-        }
-        return is_suitable || visited_paths.isEmpty();
     }
 }
