@@ -94,6 +94,12 @@ public class GrafLine extends Line
     {
         this.pheromone_evaporation = 1 - ( evaporation_amount / 100 );
     }
+
+    public void set_visible( boolean value )
+    {
+        super.setVisible( value );
+        new_text.setVisible( value );
+    }
     public Text text_weight()
     {
         new_text = TextBuilder.create().build();
@@ -114,7 +120,10 @@ public class GrafLine extends Line
         {
             new_text.setLayoutY( this.getStartY() + ( Math.abs( this.getStartY() - this.getEndY() ) / 2 ) );
         }
-        new_text.visibleProperty().bind( this.visibleProperty() );
+        return new_text;
+    }
+    public Text get_info_text()
+    {
         return new_text;
     }
 }

@@ -21,6 +21,7 @@ import javafx.scene.Scene;
 import javafx.scene.SceneBuilder;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBuilder;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ContextMenuBuilder;
 import javafx.scene.control.Menu;
@@ -56,10 +57,11 @@ public class AntAlgorithm extends Application
     private Slider slider_animation_timer, slider_feromon_evporation, slider_q_coef, slider_ant_count, slider_alpha, slider_beta;
     private Text txt_animation_timer, txt_feromon_evaporation, txt_q_coef, txt_ant_count, txt_alpha, txt_beta, txt_food_ex, txt_cave_ex, txt_ant_ex, txt_graf_ex, txt_edge_info;
     private ContextMenu contex_menu_circle, contex_menu_edge;
-    private MenuItem contex_menu_item_food, contex_menu_item_cave, contex_menu_item_delete_circle, contex_menu_item_delete_edge, menu_item_formuller, menu_item_how_to, menu_item_write_file, menu_item_read_file;
+    private MenuItem contex_menu_item_food, contex_menu_item_cave, contex_menu_item_delete_circle, contex_menu_item_delete_edge, menu_item_formuller, menu_item_how_to, menu_item_write_file, menu_item_read_file, menu_item_read_default_file;
     private ToggleButton button_draw_graf;
     private Button button_clear_graf, button_start_sim, button_stop_sim;
     private Circle circle_last, circle_context, circle_food_ex, circle_cave_ex, circle_graf_ex;
+    private CheckBox checkbox_show_info;
     private TranslateTransition[] animations;
     private ImageView image_ant_ex;
     private GrafLine line_context;
@@ -316,7 +318,7 @@ public class AntAlgorithm extends Application
             String[] id = edges[m].getId().split( "," );
             if ( Integer.parseInt( id[0] ) == n_1 || Integer.parseInt( id[1] ) == n_1 )
             {
-                edges[m].setVisible( false );
+                edges[m].set_visible( false );
             }
         }
         for ( int m = 0; m < all_neihgbours_mat.length; m++ )
@@ -413,6 +415,19 @@ public class AntAlgorithm extends Application
     }
     private VBox prepare_group_info()
     {
+        checkbox_show_info = my_builder.build_checkbox( "Feromon verisi (Pheromone info)" );
+        checkbox_show_info.setSelected( true );
+        checkbox_show_info.selectedProperty().addListener( new ChangeListener<Boolean>()
+        {
+            @Override
+            public void changed( ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue )
+            {
+                for ( GrafLine edge : edges )
+                {
+                    edge.get_info_text().setVisible( newValue );
+                }
+            }
+        } );
         circle_food_ex = my_builder.build_circle_ex();
         circle_food_ex.setRadius( Colors_and_shapes.radius_food );
         circle_food_ex.setFill( Colors_and_shapes.color_food );
@@ -429,7 +444,7 @@ public class AntAlgorithm extends Application
         txt_graf_ex = my_builder.build_text( "Graf Noktası (Graph Point)" );
         HBox hbox_1 = HBoxBuilder.create().children( circle_food_ex, txt_food_ex, circle_cave_ex, txt_cave_ex ).spacing( 10 ).alignment( Pos.BASELINE_LEFT ).build();
         HBox hbox_2 = HBoxBuilder.create().children( circle_graf_ex, txt_graf_ex, image_ant_ex, txt_ant_ex ).spacing( 10 ).alignment( Pos.BASELINE_LEFT ).build();
-        return VBoxBuilder.create().children( hbox_1, hbox_2 ).spacing( 10 ).build();
+        return VBoxBuilder.create().children( checkbox_show_info, hbox_1, hbox_2 ).spacing( 10 ).build();
     }
     private VBox prepare_group_alpha_beta()
     {
@@ -513,7 +528,7 @@ public class AntAlgorithm extends Application
             @Override
             public void handle( ActionEvent event )
             {
-                line_context.setVisible( false );
+                line_context.set_visible( false );
                 delete_neighbour( line_context.get_neighbour_1(), line_context.get_neighbour_2() );
             }
         } ).build();
@@ -593,7 +608,8 @@ public class AntAlgorithm extends Application
         } ).build();
         menu_item_write_file = MenuItemBuilder.create().text( "Graf dosyaya yaz (Write to file)" ).onAction( write_file() ).build();
         menu_item_read_file = MenuItemBuilder.create().text( "Graf dosyadan oku (Read file)" ).onAction( read_file() ).build();
-        my_menu = MenuBuilder.create().text( "Program" ).items( menu_item_formuller, menu_item_how_to, menu_item_write_file, menu_item_read_file ).build();
+        menu_item_read_default_file = MenuItemBuilder.create().text( "Varsayılan dosyadan oku (Read default file)" ).onAction( read_default_file() ).build();
+        my_menu = MenuBuilder.create().text( "Program" ).items( menu_item_formuller, menu_item_how_to, menu_item_write_file, menu_item_read_file, menu_item_read_default_file ).build();
         return MenuBarBuilder.create().menus( my_menu ).useSystemMenuBar( false ).build();
     }
     private EventHandler<MouseEvent> graf_mouse_clicked()
@@ -605,7 +621,8 @@ public class AntAlgorithm extends Application
             {
                 if ( event.getButton() == MouseButton.SECONDARY )
                 {
-                    if ( !button_start_sim.isDisabled() && ( ( Circle ) event.getSource() ).getFill() == Colors_and_shapes.color_graf )
+                    Circle clicked = ( Circle ) event.getSource();
+                    if ( !button_start_sim.isDisabled() && ( clicked.getFill() == Colors_and_shapes.color_graf || clicked.getFill() == Colors_and_shapes.color_cave || clicked.getFill() == Colors_and_shapes.color_food ) )
                     {
                         circle_context = ( Circle ) event.getSource();
                         contex_menu_circle.show( circle_context, circle_context.getCenterX(), circle_context.getCenterY() );
@@ -727,6 +744,28 @@ public class AntAlgorithm extends Application
             }
         };
     }
+    private EventHandler<ActionEvent> read_default_file()
+    {
+        return new EventHandler<ActionEvent>()
+        {
+            @Override
+            public void handle( ActionEvent event )
+            {
+                String str = Ops.read_default_file( circle_grid );
+                if ( !"".equals( str ) )
+                {
+                    try
+                    {
+                        draw_graph( str );
+                    }
+                    catch ( Exception e )
+                    {
+                    }
+                    get_settings( str );
+                }
+            }
+        };
+    }
     private EventHandler<ActionEvent> write_file()
     {
         return new EventHandler<ActionEvent>()
@@ -737,7 +776,7 @@ public class AntAlgorithm extends Application
                 if ( edges.length > 0 )
                 {
                     Ops.write_file( edges, ant_count, evaporation, q_coef, alpha, beta, grid_width );
-                    Message_box.show( "Çizilen graf ve ayarlar başarıyla kaydedildi.(Saved)", "Info", Message_box.info_message );
+                    Message_box.show( "Çizilen graf ve ayarlar başarıyla kaydedildi. (Saved)", "Info", Message_box.info_message );
                 }
                 else
                 {
@@ -916,12 +955,12 @@ public class AntAlgorithm extends Application
                 }
                 if ( !cave_exists )
                 {
-                    Message_box.show( "Yuva noktası ekleyiniz!\nGraf noktasına sağ tıklayarak bu işlemi yapabilirsiniz.\n(Add a food point by right clicking.)", "Uyarı", Message_box.warning_message );
+                    Message_box.show( "Yuva noktası ekleyiniz!\nGraf noktasına sağ tıklayarak bu işlemi yapabilirsiniz.\n(Add a cave point by right clicking.)", "Uyarı", Message_box.warning_message );
                     return;
                 }
                 if ( !food_sxists )
                 {
-                    Message_box.show( "Yiyecek noktası ekleyiniz!\nGraf noktasına sağ tıklayarak bu işlemi yapabilirsiniz.\n(Add a cave point by right clicking.)", "Uyarı", Message_box.warning_message );
+                    Message_box.show( "Yiyecek noktası ekleyiniz!\nGraf noktasına sağ tıklayarak bu işlemi yapabilirsiniz.\n(Add a food point by right clicking.)", "Uyarı", Message_box.warning_message );
                     return;
                 }
                 button_clear_graf.setDisable( true );
@@ -997,7 +1036,7 @@ public class AntAlgorithm extends Application
                 reset_neighbours();
                 for ( int m = 0; m < edges.length; m++ )
                 {
-                    edges[m].setVisible( false );
+                    edges[m].set_visible( false );
                     edges[m] = null;
                 }
                 edges = new GrafLine[ 0 ];

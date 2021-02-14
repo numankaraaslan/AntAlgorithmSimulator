@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import javafx.scene.shape.Circle;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooserBuilder;
@@ -116,6 +118,25 @@ public class Operations
         try
         {
             bw = new BufferedReader( new FileReader( read_file ) );
+            while ( bw.ready() )
+            {
+                str += bw.readLine() + "&";
+            }
+            bw.close();
+        }
+        catch ( IOException ex )
+        {
+        }
+        return str;
+    }
+    public String read_default_file( Circle[][] circle_grid )
+    {
+        InputStream stream = AntAlgorithm.class.getResourceAsStream( "graf/GRAF" );
+        String str = "";
+        BufferedReader bw;
+        try
+        {
+            bw = new BufferedReader( new InputStreamReader( stream, "UTF-8" ) );
             while ( bw.ready() )
             {
                 str += bw.readLine() + "&";

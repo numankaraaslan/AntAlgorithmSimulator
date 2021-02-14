@@ -3,6 +3,8 @@ package ant.algorithm;
 import javafx.animation.TranslateTransition;
 import javafx.animation.TranslateTransitionBuilder;
 import javafx.scene.Cursor;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckBoxBuilder;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.ImageViewBuilder;
@@ -26,6 +28,10 @@ public class Builders
     public Text build_text( String text )
     {
         return TextBuilder.create().text( text ).build();
+    }
+    public CheckBox build_checkbox( String text )
+    {
+        return CheckBoxBuilder.create().text( text ).build();
     }
     public Circle build_circle_ex()
     {
