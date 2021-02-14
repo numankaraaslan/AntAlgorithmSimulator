@@ -57,7 +57,7 @@ public class Image_ant extends ImageView
     {
         return found_food;
     }
-    public boolean path_is_available( int id_to_go )
+    public boolean path_is_suitable( int id_to_go )
     {
         boolean is_suitable = true;
         if ( visited_paths.contains( oopsyy.id_calc( id_to_go, Integer.parseInt( getId() ) ) ) )
@@ -73,7 +73,7 @@ public class Image_ant extends ImageView
             visited_paths.add( calculated_path );
         }
     }
-    public boolean is_any_path_suitable( ArrayList neighbours )
+    public boolean at_least_one_path_suitable( ArrayList neighbours )
     {
         boolean is_suitable = false;
         for ( int m = 0; m < neighbours.size(); m++ )

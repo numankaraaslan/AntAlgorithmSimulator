@@ -3,7 +3,6 @@ package ant.algorithm;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Random;
 import javafx.animation.Animation.Status;
 import javafx.animation.TranslateTransition;
@@ -69,7 +68,6 @@ public class AntAlgorithm extends Application
     private Image_ant[] my_little_ants;
     private Circle[][] circle_grid;
     private int[][] all_neihgbours_mat;
-    private ArrayList possibilities, ants_neighbours;
     private GrafLine[] edges;
     private Builders my_builder;
     private Scene my_scene;
@@ -150,84 +148,80 @@ public class AntAlgorithm extends Application
             }
         }
     }
-    private void create_animation( String ant_name )
+    private void create_animation( final Image_ant selected_ant )
     {
-        int old_id, m = -1;
-        for ( int t = 0; t < my_little_ants.length; t++ )
-        {
-            if ( my_little_ants[t].get_name().equals( ant_name ) )
-            {
-                m = t;
-                break;
-            }
-        }
-        old_id = Integer.parseInt( my_little_ants[m].getId() );
+        int old_id;
+        old_id = Integer.parseInt( selected_ant.getId() );
         if ( circle_grid[old_id / grid_width][old_id % grid_width].getFill() == Colors_and_shapes.color_food )
         {
-            if ( !my_little_ants[m].is_found_food() )
+            if ( !selected_ant.is_found_food() )
             {
-                feromon_update( my_little_ants[m] );
-                my_little_ants[m].clear_paths();
+                feromon_update( selected_ant );
+                selected_ant.clear_paths();
             }
-            my_little_ants[m].set_found_food( true );
+            selected_ant.set_found_food( true );
         }
         else if ( circle_grid[old_id / grid_width][old_id % grid_width].getFill() == Colors_and_shapes.color_cave )
         {
-            if ( my_little_ants[m].is_found_food() )
+            if ( selected_ant.is_found_food() )
             {
-                feromon_update( my_little_ants[m] );
-                my_little_ants[m].clear_paths();
+                feromon_update( selected_ant );
+                selected_ant.clear_paths();
             }
-            my_little_ants[m].set_found_food( false );
+            selected_ant.set_found_food( false );
         }
-        ants_neighbours.clear();
+        ArrayList ants_neighbours = new ArrayList();
         for ( int j = 0; j < all_neihgbours_mat[old_id].length; j++ )
         {
-            if ( all_neihgbours_mat[old_id][j] == 1 )
+            if ( all_neihgbours_mat[old_id][j] == 1 && j != Integer.parseInt( selected_ant.get_last_id() ) )
             {
                 ants_neighbours.add( j );
             }
         }
-        Collections.shuffle( ants_neighbours );
-        possibilities.clear();
-        double total_value = 0, komsu_deger;
-        for ( int i = 0; i < ants_neighbours.size(); i++ )
+        //Collections.shuffle( ants_neighbours );
+        ArrayList possibilities = new ArrayList();
+        int path_to_go = -1;
+        if ( ants_neighbours.isEmpty() )
         {
-            for ( int k = 0; k < edges.length; k++ )
+            path_to_go = Integer.parseInt( selected_ant.get_last_id() );
+        }
+        else if ( ants_neighbours.size() == 1 )
+        {
+            path_to_go = Integer.parseInt( ants_neighbours.get( 0 ).toString() );
+        }
+        else
+        {
+            double total_value = 0, neighbour_value;
+            for ( int i = 0; i < ants_neighbours.size(); i++ )
             {
-                if ( edges[k].getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_neighbours.get( i ).toString() ) ) ) )
+                for ( int k = 0; k < edges.length; k++ )
                 {
-                    total_value += Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta );
-                    possibilities.add( Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta ) );
-                    break;
+                    if ( edges[k].getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_neighbours.get( i ).toString() ) ) ) )
+                    {
+                        total_value += Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta );
+                        possibilities.add( Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta ) );
+                        break;
+                    }
                 }
             }
-        }
-        int random_max = 0, temp;
-        for ( int i = 0; i < possibilities.size(); i++ )
-        {
-            komsu_deger = Double.parseDouble( possibilities.get( i ).toString() );
-            if ( total_value == 0 )
+            int random_max = 0, temp;
+            for ( int i = 0; i < possibilities.size(); i++ )
             {
-                possibilities.set( i, 1 );
-                random_max++;
+                neighbour_value = Double.parseDouble( possibilities.get( i ).toString() );
+                if ( total_value == 0 )
+                {
+                    possibilities.set( i, 1 );
+                    random_max++;
+                }
+                else
+                {
+                    temp = ( int ) ( ( neighbour_value / total_value ) * 1000 ) < 1 ? 1 : ( int ) ( ( neighbour_value / total_value ) * 1000 );
+                    possibilities.set( i, temp );
+                    random_max += temp;
+                }
             }
-            else
-            {
-                temp = ( int ) ( ( komsu_deger / total_value ) * 1000 ) < 1 ? 1 : ( int ) ( ( komsu_deger / total_value ) * 1000 );
-                possibilities.set( i, temp );
-                random_max += temp;
-            }
-        }
-        int path_to_go = -1, some_random;
-        boolean is_possible = possibilities.size() > 1;
-        boolean is_any_path_suitable = my_little_ants[m].is_any_path_suitable( ants_neighbours );
-        if ( !is_any_path_suitable )
-        {
-            //geri_sar();
-        }
-        do
-        {
+            int some_random;
+            boolean is_any_path_suitable = selected_ant.at_least_one_path_suitable( ants_neighbours );
             do
             {
                 some_random = my_random.nextInt( random_max );
@@ -241,12 +235,11 @@ public class AntAlgorithm extends Application
                     }
                 }
             }
-            while ( is_possible && path_to_go == Integer.parseInt( my_little_ants[m].get_last_id() ) );
+            while ( !selected_ant.path_is_suitable( path_to_go ) && is_any_path_suitable );
         }
-        while ( !my_little_ants[m].path_is_available( path_to_go ) && is_any_path_suitable && is_possible );
-        my_little_ants[m].setId( path_to_go + "" );
-        my_little_ants[m].set_last_id( old_id + "" );
-        my_little_ants[m].add_path( Ops.id_calc( old_id, path_to_go ) );
+        selected_ant.setId( path_to_go + "" );
+        selected_ant.set_last_id( old_id + "" );
+        selected_ant.add_path( Ops.id_calc( old_id, path_to_go ) );
         int new_pos_x = offset_x + ( graf_space * ( path_to_go % grid_width ) ) - 10;
         int new_pos_y = offset_y + ( graf_space * ( path_to_go / grid_width ) ) - 10;
         GrafLine temp_line = edges[0];
@@ -261,22 +254,21 @@ public class AntAlgorithm extends Application
         int anim = -1;
         for ( int k = 0; k < animations.length; k++ )
         {
-            if ( ( ( Image_ant ) animations[k].getNode() ).get_name().equals( my_little_ants[m].get_name() ) )
+            if ( ( ( Image_ant ) animations[k].getNode() ).get_name().equals( selected_ant.get_name() ) )
             {
                 anim = k;
                 break;
             }
         }
-        animations[anim] = my_builder.build_translate_transition( my_little_ants[m], animation_time, new_pos_x, new_pos_y, temp_line );
-        int old_x = ( int ) my_little_ants[m].getTranslateX(), old_y = ( int ) my_little_ants[m].getTranslateY();
-        my_little_ants[m].setRotate( Ops.calc_rotate( old_x, old_y, new_pos_x, new_pos_y ) );
-        final String recall_name = my_little_ants[m].get_name();
+        animations[anim] = my_builder.build_translate_transition( selected_ant, animation_time, new_pos_x, new_pos_y, temp_line );
+        int old_x = ( int ) selected_ant.getTranslateX(), old_y = ( int ) selected_ant.getTranslateY();
+        selected_ant.setRotate( Ops.calc_rotate( old_x, old_y, new_pos_x, new_pos_y ) );
         animations[anim].setOnFinished( new EventHandler<ActionEvent>()
         {
             @Override
             public void handle( ActionEvent event )
             {
-                create_animation( recall_name );
+                create_animation( selected_ant );
             }
         } );
         animations[anim].playFromStart();
@@ -333,8 +325,6 @@ public class AntAlgorithm extends Application
         my_random = new Random();
         Ops = new Operations();
         my_builder = new Builders();
-        possibilities = new ArrayList();
-        ants_neighbours = new ArrayList();
         screen_width = ( int ) Screen.getPrimary().getBounds().getWidth();
         screen_height = ( int ) Screen.getPrimary().getBounds().getHeight();
     }
@@ -1012,7 +1002,7 @@ public class AntAlgorithm extends Application
                     my_little_ants = Ops.add_circle( my_little_ants, ant );
                     animations[m] = new TranslateTransition();
                     animations[m].setNode( ant );
-                    create_animation( my_little_ants[m].get_name() );
+                    create_animation( my_little_ants[m] );
                 }
                 my_timer.restart();
             }
