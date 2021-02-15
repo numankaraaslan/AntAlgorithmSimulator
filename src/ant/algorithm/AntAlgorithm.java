@@ -988,7 +988,7 @@ public class AntAlgorithm extends Application
                 {
                     ant = my_builder.build_image_ant( Integer.parseInt( cave_circle.getId() ), ( int ) cave_circle.getCenterX(), ( int ) cave_circle.getCenterY(), "k" + m );
                     group_grid.getChildren().add( ant );
-                    my_little_ants = Ops.add_circle( my_little_ants, ant );
+                    my_little_ants = Ops.add_ant( my_little_ants, ant );
                     create_animation( ant );
                 }
                 my_timer.restart();
@@ -1055,4 +1055,5 @@ public class AntAlgorithm extends Application
             }
         };
     }
+
 }

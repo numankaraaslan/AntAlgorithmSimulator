@@ -43,14 +43,14 @@ public class Operations
         return new_array;
     }
 
-    public Image_ant[] add_circle( Image_ant[] old_array, Image_ant new_circle )
+    public Image_ant[] add_ant( Image_ant[] old_array, Image_ant new_ant )
     {
         Image_ant[] new_array = new Image_ant[ old_array.length + 1 ];
         for ( int m = 0; m <= old_array.length; m++ )
         {
             if ( m == old_array.length )
             {
-                new_array[m] = new_circle;
+                new_array[m] = new_ant;
             }
             else
             {
