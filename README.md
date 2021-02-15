@@ -3,7 +3,7 @@ An ant algorithm simulation with JavaFX.
 Download link to the jar file is below (includes a graph file and translation for UI)
 (Note: "graph" file is drawn in 1920x1080 resolution and requires a screen with minimum 1280x720 resolution to display)
 
-https://www.dropbox.com/s/yi8cdh7737ijixb/Ants.zip?dl=0
+https://www.dropbox.com/s/60944w7hew99can/Ants.zip?dl=1
 
 Summary of the implementation and variables:
 
