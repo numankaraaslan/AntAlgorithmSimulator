@@ -63,7 +63,7 @@ public class AntAlgorithm extends Application
     private CheckBox checkbox_show_info;
     private ImageView image_ant_ex;
     private GrafLine line_context;
-    private Timer my_timer;
+    private Timer pheromone_timer;
     private Image_ant[] my_little_ants;
     private Circle[][] circle_grid;
     private int[][] all_neihgbours_mat;
@@ -83,26 +83,11 @@ public class AntAlgorithm extends Application
     {
         my_stage = primaryStage;
         animation_time = ( double ) 1 / animation_time_coef;
+        pheromone_timer = create_pheromone_timer( animation_time != 0 ? ( int ) ( 100 / animation_time ) : Integer.MAX_VALUE );
         prepare_variables();
         group_root = GroupBuilder.create().layoutX( offset_x ).layoutY( offset_y ).build();
         group_right = prepare_group_right();
         group_left = prepare_group_left();
-        my_timer = new Timer( 1000, new ActionListener()
-        {
-            @Override
-            public void actionPerformed( java.awt.event.ActionEvent e )
-            {
-                Platform.runLater( new Task()
-                {
-                    @Override
-                    protected Object call() throws Exception
-                    {
-                        feromon_update();
-                        return 1;
-                    }
-                } );
-            }
-        } );
         group_root.getChildren().addAll( group_left, group_right );
         my_scene = SceneBuilder.create().width( screen_width - 50 ).height( screen_height - 100 ).root( group_root ).onKeyPressed( scene_key_pressed() ).build();
         prepare_stage();
@@ -110,7 +95,7 @@ public class AntAlgorithm extends Application
     @Override
     public void stop() throws Exception
     {
-        my_timer.stop();
+        pheromone_timer.stop();
     }
     private void feromon_update()
     {
@@ -866,7 +851,7 @@ public class AntAlgorithm extends Application
             @Override
             public void handle( ActionEvent event )
             {
-                my_timer.stop();
+                pheromone_timer.stop();
                 ( ( Button ) event.getSource() ).setDisable( true );
                 button_start_sim.setDisable( false );
                 for ( int m = 0; m < grid_height; m++ )
@@ -991,7 +976,8 @@ public class AntAlgorithm extends Application
                     my_little_ants = Ops.add_ant( my_little_ants, ant );
                     create_animation( ant );
                 }
-                my_timer.restart();
+                pheromone_timer = create_pheromone_timer( animation_time != 0 ? ( int ) ( 500 / animation_time ) : Integer.MAX_VALUE );
+                pheromone_timer.start();
             }
         };
     }
@@ -1030,8 +1016,12 @@ public class AntAlgorithm extends Application
             {
                 txt_animation_timer.setText( "Animasyon Hızı (Speed) = " + newValue.intValue() );
                 animation_time = ( double ) newValue.intValue() / animation_time_coef;
-                my_timer.setDelay( animation_time != 0 ? ( int ) ( 500 / animation_time ) : Integer.MAX_VALUE );
-                my_timer.restart();
+                if ( pheromone_timer.isRunning() )
+                {
+                    pheromone_timer.stop();
+                    pheromone_timer = create_pheromone_timer( animation_time != 0 ? ( int ) ( 100 / animation_time ) : Integer.MAX_VALUE );
+                    pheromone_timer.start();
+                }
                 if ( my_little_ants != null )
                 {
                     if ( newValue.intValue() == 0 )
@@ -1054,6 +1044,25 @@ public class AntAlgorithm extends Application
                 }
             }
         };
+    }
+    private Timer create_pheromone_timer( int milis )
+    {
+        return new Timer( milis, new ActionListener()
+        {
+            @Override
+            public void actionPerformed( java.awt.event.ActionEvent e )
+            {
+                Platform.runLater( new Task()
+                {
+                    @Override
+                    protected Object call() throws Exception
+                    {
+                        feromon_update();
+                        return 1;
+                    }
+                } );
+            }
+        } );
     }
 
 }
