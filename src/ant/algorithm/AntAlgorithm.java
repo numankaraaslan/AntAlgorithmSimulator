@@ -383,7 +383,7 @@ public class AntAlgorithm extends Application
     }
     private VBox prepare_group_ant_count()
     {
-        slider_ant_count = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( false ).majorTickUnit( 1 ).value( ant_count ).min( 1 ).max( 2000 ).build();
+        slider_ant_count = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( false ).majorTickUnit( 1 ).value( ant_count ).min( 1 ).max( 3000 ).build();
         txt_ant_count = my_builder.build_text( "Karınca sayısı (Ant count) = " + ant_count );
         slider_ant_count.valueProperty().addListener( new ChangeListener<Number>()
         {
