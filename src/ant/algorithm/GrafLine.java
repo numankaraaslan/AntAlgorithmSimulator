@@ -50,7 +50,14 @@ public class GrafLine extends Line
     }
     public void update_feromon()
     {
-        pheromone_amount.set( feromon_minimum + ( pheromone_amount.doubleValue() * pheromone_evaporation ) );
+        if ( pheromone_amount.get() < feromon_minimum )
+        {
+            pheromone_amount.set( feromon_minimum );
+        }
+        else
+        {
+            pheromone_amount.set( ( double ) ( pheromone_amount.doubleValue() * pheromone_evaporation ) );
+        }
         Color line_color = ( Color ) this.getStroke();
         double opacity = calculate_opacity();
         line_color = Color.rgb( 255, ( int ) line_color.getGreen(), ( int ) line_color.getBlue(), opacity );

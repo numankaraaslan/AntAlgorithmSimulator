@@ -185,12 +185,12 @@ public class AntAlgorithm extends Application
             double total_value = 0, neighbour_value;
             for ( int i = 0; i < ants_suitable_neighbours.size(); i++ )
             {
-                for ( int k = 0; k < edges.length; k++ )
+                for ( GrafLine edge : edges )
                 {
-                    if ( edges[k].getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_suitable_neighbours.get( i ).toString() ) ) ) )
+                    if ( edge.getId().equals( Ops.id_calc( old_id, Integer.parseInt( ants_suitable_neighbours.get( i ).toString() ) ) ) )
                     {
-                        total_value += Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta );
-                        possibilities.add( Math.pow( edges[k].get_feromon(), alpha ) * Math.pow( edges[k].get_length(), beta ) );
+                        total_value += Math.pow( edge.get_feromon(), alpha ) * Math.pow( edge.get_length(), beta );
+                        possibilities.add( Math.pow( edge.get_feromon(), alpha ) * Math.pow( edge.get_length(), beta ) );
                         break;
                     }
                 }
@@ -199,30 +199,30 @@ public class AntAlgorithm extends Application
             for ( int i = 0; i < possibilities.size(); i++ )
             {
                 neighbour_value = Double.parseDouble( possibilities.get( i ).toString() );
-                if ( total_value == 0 )
-                {
-                    possibilities.set( i, 1 );
-                    random_max++;
-                }
-                else
-                {
-                    temp = ( int ) ( ( neighbour_value / total_value ) * 1000 ) < 1 ? 1 : ( int ) ( ( neighbour_value / total_value ) * 1000 );
-                    possibilities.set( i, temp );
-                    random_max += temp;
-                }
+                temp = ( int ) ( ( neighbour_value / total_value ) * 1000 ) < 1 ? 1 : ( int ) ( ( neighbour_value / total_value ) * 1000 );
+                possibilities.set( i, temp );
+                random_max += temp;
             }
             int some_random;
-            some_random = my_random.nextInt( random_max );
+            some_random = my_random.nextInt( random_max + 1 );
             for ( int k = 0; k < possibilities.size(); k++ )
             {
                 some_random -= Double.parseDouble( possibilities.get( k ).toString() );
-                if ( some_random < 0 )
+                if ( some_random <= 0 )
                 {
                     path_to_go = Integer.parseInt( ants_suitable_neighbours.get( k ).toString() );
                     break;
                 }
             }
         }
+        //for ( GrafLine edge : edges )
+        //{
+        //if ( edge.getId().equals( Ops.id_calc( old_id, path_to_go ) ) )
+        //{
+        //edge.setStroke( Color.BLUE );
+        //break;
+        //}
+        //}
         selected_ant.setId( path_to_go + "" );
         selected_ant.set_last_id( old_id + "" );
         selected_ant.add_path( Ops.id_calc( old_id, path_to_go ) );
