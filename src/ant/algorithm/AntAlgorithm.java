@@ -327,14 +327,14 @@ public class AntAlgorithm extends Application
     }
     private VBox prepare_group_time()
     {
-        slider_animation_timer = SliderBuilder.create().blockIncrement( 1 ).showTickMarks( true ).majorTickUnit( 1 ).value( animation_time * animation_time_coef ).min( 0 ).max( 100 ).build();
+        slider_animation_timer = SliderBuilder.create().blockIncrement( 1 ).showTickMarks( true ).majorTickUnit( 1 ).value( animation_time * animation_time_coef ).min( 0 ).max( 200 ).build();
         slider_animation_timer.valueProperty().addListener( animation_timer_changed() );
         txt_animation_timer = my_builder.build_text( "Animasyon Hızı (Speed) = " + ( int ) slider_animation_timer.getValue() );
         return VBoxBuilder.create().children( txt_animation_timer, slider_animation_timer ).spacing( 5 ).build();
     }
     private VBox prepare_group_evaporation()
     {
-        slider_feromon_evporation = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( true ).majorTickUnit( 1 ).value( evaporation ).min( 1 ).max( 90 ).build();
+        slider_feromon_evporation = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( true ).majorTickUnit( 1 ).value( evaporation ).min( 1 ).max( 99 ).build();
         txt_feromon_evaporation = my_builder.build_text( "Feromon Uçuculuğu Yüzdesi (Evaporation) (b) = " + ( int ) slider_feromon_evporation.getValue() );
         slider_feromon_evporation.valueProperty().addListener( new ChangeListener<Number>()
         {
@@ -353,7 +353,7 @@ public class AntAlgorithm extends Application
     }
     private VBox prepare_group_q()
     {
-        slider_q_coef = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( false ).majorTickUnit( 1 ).value( q_coef / 100 ).min( 0 ).max( 400 ).build();
+        slider_q_coef = SliderBuilder.create().blockIncrement( 1 ).snapToTicks( true ).showTickMarks( false ).majorTickUnit( 1 ).value( q_coef / 100 ).min( 0 ).max( 1000 ).build();
         txt_q_coef = my_builder.build_text( "Q sabiti (Pheromone amount) = " + ( int ) slider_q_coef.getValue() );
         slider_q_coef.valueProperty().addListener( new ChangeListener<Number>()
         {
