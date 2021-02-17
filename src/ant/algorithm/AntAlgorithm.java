@@ -70,7 +70,6 @@ public class AntAlgorithm extends Application
     private GrafLine[] edges;
     private Builders my_builder;
     private Scene my_scene;
-    private Random my_random;
     private Menu my_menu;
     private Operations Ops;
     private MenuBar my_menu_bar;
@@ -174,7 +173,7 @@ public class AntAlgorithm extends Application
         }
         else if ( ants_suitable_neighbours.isEmpty() )
         {
-            path_to_go = Integer.parseInt( ants_all_neighbours.get( my_random.nextInt( ants_all_neighbours.size() ) ).toString() );
+            path_to_go = Integer.parseInt( ants_all_neighbours.get( new Random().nextInt( ants_all_neighbours.size() ) ).toString() );
         }
         else if ( ants_suitable_neighbours.size() == 1 )
         {
@@ -204,7 +203,7 @@ public class AntAlgorithm extends Application
                 random_max += temp;
             }
             int some_random;
-            some_random = my_random.nextInt( random_max + 1 );
+            some_random = new Random().nextInt( random_max + 1 );
             for ( int k = 0; k < possibilities.size(); k++ )
             {
                 some_random -= Double.parseDouble( possibilities.get( k ).toString() );
@@ -300,7 +299,6 @@ public class AntAlgorithm extends Application
     private void prepare_variables()
     {
         edges = new GrafLine[ 0 ];
-        my_random = new Random();
         Ops = new Operations();
         my_builder = new Builders();
         screen_width = ( int ) Screen.getPrimary().getBounds().getWidth();
