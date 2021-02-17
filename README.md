@@ -1,9 +1,8 @@
 An ant algorithm simulation with JavaFX.
 
-Download link to the jar file is below (includes a graph file and translation for UI)
-(Note: "graph" file is drawn in 1920x1080 resolution and requires a screen with minimum 1280x720 resolution to display)
+You should read my blog post about this:
 
-https://www.dropbox.com/s/60944w7hew99can/Ants.zip?dl=1
+http://www.numankaraaslan.com/entry?ent=28
 
 Summary of the implementation and variables:
 
